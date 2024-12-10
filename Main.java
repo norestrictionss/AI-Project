@@ -69,10 +69,11 @@ public class Main {
         int [] posSequence;
         int [] newArray;
 
-        List<int[][]> posBFS = new ArrayList<>();                   //Initialize Stack/Queue
-        posBFS.add(new int[][]{startPos});                          //Add first move
-
         List<int[]> posArray = new ArrayList<>();                   //Initialize Stack/Queue
+
+        if(searchMethod.equals("a")) {
+            posArray.add(new int[]{startPos[0], startPos[1]});          // Add first move
+        }
 
         if(searchMethod.equals("b"))      {                         //Depth first initialize
             posArray.add(new int[]{startPos[0], startPos[1], 0, 1});      //Add first move
@@ -93,10 +94,10 @@ public class Main {
         }
     
         //place remaining knights
-        while(!posBFS.isEmpty() && searchMethod.equals("a") || !posArray.isEmpty() && !searchMethod.equals("a")){
+        while(!posArray.isEmpty() && searchMethod.equals("a") || !posArray.isEmpty() && !searchMethod.equals("a")){
             
             if(searchMethod.equals("a")){
-                BFS(posBFS);
+                BFS(posArray);
             }
             else if(searchMethod.equals("b")){
                 DFS(posArray);
@@ -119,39 +120,47 @@ public class Main {
         return solutionFound = true;                            //If all visited return true
     }
 
-    public static void BFS(List<int[][]> pos){                  //BFS function with given stack/queue
-            
-        int [][] path = pos.remove(0);                   //Pop first position from stack/queue to process
-        int [] lastPosition = path[path.length-1];
+    public static void BFS(List<int[]> pos){                  // BFS function with given stack/queue
 
-        for(int i = 0;i<N;i++){                                //Loop all cells, set unvisited
-            for(int j = 0;j<N;j++){
+        int[] path = pos.remove(0);                // Pop first position from stack/queue to process
+        int lastPositionX = path[path.length - 2];      // Get last X position
+        int lastPositionY = path[path.length - 1];      // Get last Y position
+
+        for(int i = 0; i < N; i++){                    // Loop all cells, set unvisited
+            for(int j = 0; j < N; j++){
                 board.setPosition(i, j, -1);
                 board.setVisited(i, j, false);
             }
         }
 
-        for(int i = 0;i<path.length;i++){                      //Set visited position move number
-            board.setPosition(path[i][0], path[i][1], i+1);
+        // Set visited position move number
+        for(int i = 0; i < path.length / 2; i++){
+            int x = path[2 * i]; // X coordinate at even index
+            int y = path[2 * i + 1]; // Y coordinate at odd index
+            board.setPosition(x, y, i + 1);
         }
 
-        for(int i = 0;i<knightMoves.length;i++){
-            //If unvisited and in range
-            if(board.isInRange(lastPosition[0]+knightMoves[i][0], lastPosition[1]+knightMoves[i][1])
-            && !board.getCell(lastPosition[0]+knightMoves[i][0], lastPosition[1]+knightMoves[i][1]).isVisited()){
+        // Check possible knight moves
+        for(int i = 0; i < knightMoves.length; i++){
+            int[] newPos = getNextPosition(new int[] {lastPositionX, lastPositionY}, i);
+            int newX = newPos[0];
+            int newY = newPos[1];
 
-                int[] nextPos = new int[2];                   //Make a move, put into nextPos[] TODO replace with method implementation
-                nextPos[0] = lastPosition[0]+knightMoves[i][0];
-                nextPos[1] = lastPosition[1]+knightMoves[i][1];
+            // If unvisited and in range
+            if(board.isInRange(newX, newY) && !board.getCell(newX, newY).isVisited()){
 
-                int[][] newPath = new int[path.length + 1][]; //Add next position to the path
-                System.arraycopy(path, 0, newPath, 0, path.length);
-                newPath[path.length] = nextPos;
-                pos.add(newPath);
+                int[] nextPos = new int[]{newX, newY}; // Make a move, put into nextPos[]
+                int[] newPath = new int[path.length + 2]; // Add next position to the path
+
+                System.arraycopy(path, 0, newPath, 0, path.length); // Copy existing path
+                newPath[path.length] = nextPos[0];
+                newPath[path.length + 1] = nextPos[1];
+
+                pos.add(newPath); // Add the new path to the queue
             }
         }
-        
     }
+
 
     public static void DFS(List<int[]> pos){
         int [] currentPos = pos.get(pos.size()-1);
