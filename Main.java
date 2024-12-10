@@ -237,10 +237,10 @@ public class Main {
             //Assuming posSequence is an int[] array
             int[] newArray = new int[4 + posSequence.length];
             // Add the original elements
-            newArray[0] = x;
-            newArray[1] = y;
-            newArray[2] = n + 1;
-            newArray[3] = 4;
+            newArray[0] = x;  // The x coordinate that will be expanded
+            newArray[1] = y; // The y coordinate that will be expanded
+            newArray[2] = n + 1; // Move count of the next node
+            newArray[3] = 4; // Current index of the position sequence
             // Add elements from posSequence
             System.arraycopy(posSequence, 0, newArray, 4, posSequence.length);
             pos.add(newArray);
