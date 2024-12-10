@@ -66,21 +66,20 @@ public class Main {
         int i = 0;
         board.setPosition(startPos[0], startPos[1], 1); //Make first move
 
-        List<int[][]> posBFS = new ArrayList<>();                   //Initialize Stack/Queue
-
-        List<int[]> posArray = new ArrayList<>();                     //Initialize Stack/Queue
-        List<int[]> posDFS = new ArrayList<>();                     //Initialize Stack/Queue
-        List<int[]> posHeuristic= new ArrayList<>();                //Initialize Stack/Queue
-
-
-        posBFS.add(new int[][]{startPos});                          //Add first move
-        posDFS.add(new int[]{startPos[0], startPos[1], 0, 1});      //Add first move
-
         int [] posSequence;
         int [] newArray;
 
+        List<int[][]> posBFS = new ArrayList<>();                   //Initialize Stack/Queue
+        posBFS.add(new int[][]{startPos});                          //Add first move
+
+        List<int[]> posArray = new ArrayList<>();                   //Initialize Stack/Queue
+
+        if(searchMethod.equals("b"))      {                         //Depth first initialize
+            posArray.add(new int[]{startPos[0], startPos[1], 0, 1});      //Add first move
+        }
+
         if(searchMethod.equals("c") || searchMethod.equals("d")){                               //Heuristic case
-            posSequence = heuristic2(new int[]{x, y});  //Get pos sequence for heuristic
+            posSequence = getPosSequenceHeuristic(new int[]{x, y});  //Get pos sequence for heuristic
             newArray = new int[4 + posSequence.length];
 
             //Add the original elements
@@ -90,22 +89,21 @@ public class Main {
             newArray[3] = 4;
             // Add elements from posSequence
             System.arraycopy(posSequence, 0, newArray, 4, posSequence.length);
-            posHeuristic.add(newArray);
+            posArray.add(newArray);
         }
     
         //place remaining knights
-        while(!posBFS.isEmpty() && searchMethod.equals("a") || !posDFS.isEmpty() && searchMethod.equals("b") ||
-              (!posHeuristic.isEmpty() && (searchMethod.equals("c") || searchMethod.equals("d")))){
+        while(!posBFS.isEmpty() && searchMethod.equals("a") || !posArray.isEmpty() && !searchMethod.equals("a")){
             
             if(searchMethod.equals("a")){
                 BFS(posBFS);
             }
             else if(searchMethod.equals("b")){
-                DFS(posDFS);
+                DFS(posArray);
             }
 
             else if(searchMethod.equals("c") || searchMethod.equals("d")){
-                heuristic(posHeuristic);
+                heuristic(posArray);
             }
 
             if(n==N*N  && !searchMethod.equals("a")) return solutionFound = true;
@@ -211,7 +209,7 @@ public class Main {
             int [] posSequence;
 
             //Get queue for heuristic
-            posSequence = heuristic2(new int[]{x, y});
+            posSequence = getPosSequenceHeuristic(new int[]{x, y});
 
 
             //Assuming posSequence is an int[] array
@@ -232,7 +230,7 @@ public class Main {
 
     }
 
-    public static int[] heuristic2(int[] pos) {
+    public static int[] getPosSequenceHeuristic(int[] pos) {
         double[] moveProxies = new double[8];
         int[] moveCounts = new int[8];
 
