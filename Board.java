@@ -41,5 +41,11 @@ class Board {
             System.out.println();
         }
         System.out.println();
+        for (Cell[] cells : board) {
+            for (Cell cell : cells) {
+                System.out.print(cell.isVisited() + "\t");
+            }
+            System.out.println();
+        }
     }
 }

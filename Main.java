@@ -14,14 +14,14 @@ public class Main {
     
     static String searchMethod; //Search method
 
-    static int[][] knightMoves = {
+    static int[][] knightMoves = {      //Possible knight move set
             {2, 1}, {2, -1}, {-2, 1}, {-2, -1},
             {1, 2}, {1, -2}, {-1, 2}, {-1, -2}
     };
 
     static Board board;
     static boolean solutionFound = false;
-    static int[] startPosition = new int[1];
+    static int[] startPosition = new int[1];    //Starting position to be set
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
@@ -52,7 +52,7 @@ public class Main {
             System.out.println("Solution found!");
             board.printBoard();
         }
-        else if (N < 5) {
+        else if (N < 5) {       //TODO make it so functions called actually detect this!
             System.out.println("No Solution Exists");
         }
         else {
@@ -67,17 +67,22 @@ public class Main {
         //First knight placed
         int i = 0;
         board.setPosition(startPos[0], startPos[1], 1); //Make first move
-        List<int[][]> posBFS = new ArrayList<>();
-        List<int[]> posDFS = new ArrayList<>();
-        List<int[]> posHeuristic= new ArrayList<>();
-        posBFS.add(new int[][]{startPos});
-        posDFS.add(new int[]{startPos[0], startPos[1], 0, 1});
+
+        List<int[][]> posBFS = new ArrayList<>();                   //Initialize Stack/Queue
+        List<int[]> posDFS = new ArrayList<>();                     //Initialize Stack/Queue
+        List<int[]> posHeuristic= new ArrayList<>();                //Initialize Stack/Queue
+
+        posBFS.add(new int[][]{startPos});                          //Add first move
+        posDFS.add(new int[]{startPos[0], startPos[1], 0, 1});      //Add first move
+
         int [] posSequence;
         int [] newArray;
-        if(searchMethod.equals("c")){
-            posSequence = getMoveQueueHeuristic1(new int[]{x, y});
+
+        if(searchMethod.equals("c")){                               //Heuristic 1 case
+            posSequence = getMoveQueueHeuristic1(new int[]{x, y});  //Get pos sequence for heuristic 1
             newArray = new int[4 + posSequence.length];
-            // Add the original elements
+
+            //Add the original elements
             newArray[0] = x;
             newArray[1] = y;
             newArray[2] = 1;
@@ -86,8 +91,9 @@ public class Main {
             System.arraycopy(posSequence, 0, newArray, 4, posSequence.length);
             posHeuristic.add(newArray);
         }
-        else if(searchMethod.equals("d")){
-            posSequence = getMoveQueueHeuristic1(new int[]{x, y});
+
+        else if(searchMethod.equals("d")){                          //Heuristic 2 case
+            posSequence = getMoveQueueHeuristic2(new int[]{x, y});  //Get pos sequence for heuristic 2
             newArray = new int[4 + posSequence.length];
             // Add the original elements
                     
@@ -113,7 +119,6 @@ public class Main {
 
             else if(searchMethod.equals("c")){
                 heuristic(posHeuristic);
-                
             }
             else if(searchMethod.equals("d")){
                 heuristic(posHeuristic);
@@ -125,42 +130,45 @@ public class Main {
             if(n==N*N  && !searchMethod.equals("a")) return solutionFound = true;
         }
 
-        for(int k = 0;i<N;i++){
+        for(int k = 0;i<N;i++){                                 //Check for unvisited cell and return false
             for(int j = 0;j<N;j++){
                 if(board.getCell(k, j).getMoveNumber()==-1)
                     return solutionFound=false;
             }
         }
-        return solutionFound = true;
+
+        return solutionFound = true;                            //If all visited return true
     }
 
-    public static void BFS(List<int[][]> pos){
+    public static void BFS(List<int[][]> pos){                  //BFS function with given stack/queue
             
-        int [][] path = pos.remove(0);
+        int [][] path = pos.remove(0);                   //Pop first position from stack/queue to process
         int [] lastPosition = path[path.length-1];
 
-        for(int i = 0;i<N;i++){
+        for(int i = 0;i<N;i++){                                //Loop all cells, set unvisited
             for(int j = 0;j<N;j++){
                 board.setPosition(i, j, -1);
                 board.setVisited(i, j, false);
             }
         }
-        for(int i = 0;i<path.length;i++){
+
+        for(int i = 0;i<path.length;i++){                      //Set visited position move number
             board.setPosition(path[i][0], path[i][1], i+1);
         }
 
         for(int i = 0;i<knightMoves.length;i++){
-
-            if(board.isInRange(lastPosition[0]+knightMoves[i][0], lastPosition[1]+knightMoves[i][1]) 
+            //If unvisited and in range
+            if(board.isInRange(lastPosition[0]+knightMoves[i][0], lastPosition[1]+knightMoves[i][1])
             && !board.getCell(lastPosition[0]+knightMoves[i][0], lastPosition[1]+knightMoves[i][1]).isVisited()){
-                int nextPos [] = new int[2];
+
+                int[] nextPos = new int[2];                   //Make a move, put into nextPos[] TODO replace with method implementation
                 nextPos[0] = lastPosition[0]+knightMoves[i][0];
                 nextPos[1] = lastPosition[1]+knightMoves[i][1];
 
-                int[][] newPath = new int[path.length + 1][];
+                int[][] newPath = new int[path.length + 1][]; //Add next position to the path
                 System.arraycopy(path, 0, newPath, 0, path.length);
-                newPath[path.length] = nextPos; // Add next position to the path
-                pos.add(newPath); 
+                newPath[path.length] = nextPos;
+                pos.add(newPath);
             }
         }
         
@@ -222,12 +230,12 @@ public class Main {
             
             int [] posSequence;
 
-            if(searchMethod.equals("c"))
-                posSequence= getMoveQueueHeuristic1(new int[]{x, y});
+            if(searchMethod.equals("c"))                //Get queue for heuristic
+                posSequence = getMoveQueueHeuristic1(new int[]{x, y});
             else 
-                posSequence= getMoveQueueHeuristic2(new int[]{x, y});
+                posSequence = getMoveQueueHeuristic2(new int[]{x, y});
 
-            // Assuming posSequence is an int[] array
+            //Assuming posSequence is an int[] array
             int[] newArray = new int[4 + posSequence.length];
             // Add the original elements
             newArray[0] = x;
@@ -237,7 +245,7 @@ public class Main {
             // Add elements from posSequence
             System.arraycopy(posSequence, 0, newArray, 4, posSequence.length);
             pos.add(newArray);
-            board.setPosition(currentPos[0], currentPos[1], n+1);
+            board.setPosition(currentPos[0], currentPos[1], n);     //TODO bug check
         }
         else{
             ++pos.get(pos.size()-1)[3];
