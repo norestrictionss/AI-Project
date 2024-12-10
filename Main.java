@@ -94,17 +94,12 @@ public class Main {
         }
     
         //place remaining knights
-        while(!posArray.isEmpty() && searchMethod.equals("a") || !posArray.isEmpty() && !searchMethod.equals("a")){
-            
-            if(searchMethod.equals("a")){
-                BFS(posArray);
-            }
-            else if(searchMethod.equals("b")){
-                DFS(posArray);
-            }
+        while(!posArray.isEmpty()){
 
-            else if(searchMethod.equals("c") || searchMethod.equals("d")){
-                heuristic(posArray);
+            switch (searchMethod) {
+                case "a" -> BFS(posArray);
+                case "b" -> DFS(posArray);
+                case "c", "d" -> heuristic(posArray);
             }
 
             if(n==N*N  && !searchMethod.equals("a")) return solutionFound = true;
@@ -166,27 +161,26 @@ public class Main {
         int [] currentPos = pos.get(pos.size()-1);
         int currentMove = currentPos[2];
         n = currentPos[3];
-        // System.out.printf("%d %d %d %d \n", currentPos[0], currentPos[1], currentMove, n);
+
         if(currentPos[2]==knightMoves.length){
             board.setPosition(currentPos[0], currentPos[1], -1);
             board.setVisited(currentPos[0], currentPos[1], false);
-            
+
             pos.remove(pos.size()-1);
             if(pos.isEmpty())
                 return;
             ++pos.get(pos.size()-1)[2];
         }
-        else if(board.isInRange(currentPos[0]+knightMoves[currentMove][0], currentPos[1]+knightMoves[currentMove][1]) 
+        else if(board.isInRange(currentPos[0]+knightMoves[currentMove][0], currentPos[1]+knightMoves[currentMove][1])
             && !board.getCell(currentPos[0]+knightMoves[currentMove][0], currentPos[1]+knightMoves[currentMove][1]).isVisited()){
-            // System.out.printf("%d %d %d %d 1\n", currentPos[0]+knightMoves[currentMove][0], currentPos[1]+knightMoves[currentMove][1], currentMove, pos.get(pos.size()-1)[3]+1);
+
             pos.add(new int[]{currentPos[0]+knightMoves[currentMove][0], currentPos[1]+knightMoves[currentMove][1], 0, n+1});
             board.setPosition(currentPos[0]+knightMoves[currentMove][0], currentPos[1]+knightMoves[currentMove][1], n+1);
         }
         else{
             ++pos.get(pos.size()-1)[2];
         }
-        /*  return false; */
-        
+
     }
 
     public static void heuristic(List<int[]> pos){
@@ -194,14 +188,14 @@ public class Main {
         int [] currentPos = new int[]{pos.get(pos.size()-1)[0], pos.get(pos.size()-1)[1]};
         int posSequenceIndex = pos.get(pos.size()-1)[3];
         n = pos.get(pos.size()-1)[2];
-        board.setPosition(currentPos[0], currentPos[1], n);     //TODO bug check
+        board.setPosition(currentPos[0], currentPos[1], n);
         int[] newPos; 
         if(posSequenceIndex-4!=knightMoves.length){
             newPos = getNextPosition(currentPos, pos.get(pos.size()-1)[posSequenceIndex]);
             x = newPos[0];
             y = newPos[1];
         }
-        // System.out.printf("%d %d %d %d \n", currentPos[0], currentPos[1], currentMove, n);
+
         if(posSequenceIndex-4==knightMoves.length){
             board.setPosition(currentPos[0], currentPos[1], -1);
             board.setVisited(currentPos[0], currentPos[1], false);
@@ -213,7 +207,6 @@ public class Main {
         }
         else if(board.isInRange(x, y) 
             && !board.getCell(x, y).isVisited()){
-            // System.out.printf("%d %d %d %d 1\n", currentPos[0]+knightMoves[currentMove][0], currentPos[1]+knightMoves[currentMove][1], currentMove, pos.get(pos.size()-1)[3]+1);
             
             int [] posSequence;
 
