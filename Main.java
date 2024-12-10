@@ -205,9 +205,8 @@ public class Main {
 
         int [] currentPos = new int[]{pos.get(pos.size()-1)[0], pos.get(pos.size()-1)[1]};
         int posSequenceIndex = pos.get(pos.size()-1)[3];
-        
         n = pos.get(pos.size()-1)[2];
-
+        board.setPosition(currentPos[0], currentPos[1], n);     //TODO bug check
         int[] newPos; 
         if(posSequenceIndex-4!=knightMoves.length){
             newPos = getNextPosition(currentPos, pos.get(pos.size()-1)[posSequenceIndex]);
@@ -245,7 +244,6 @@ public class Main {
             // Add elements from posSequence
             System.arraycopy(posSequence, 0, newArray, 4, posSequence.length);
             pos.add(newArray);
-            board.setPosition(currentPos[0], currentPos[1], n);     //TODO bug check
         }
         else{
             ++pos.get(pos.size()-1)[3];
