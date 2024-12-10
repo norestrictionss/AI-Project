@@ -2,9 +2,7 @@ import java.util.*;
 
 public class Main {
 
-
     static int x0;              //Starting positions
-
     static int y0;
     static int N;               //Size
 
@@ -72,6 +70,7 @@ public class Main {
         List<int[]> posDFS = new ArrayList<>();                     //Initialize Stack/Queue
         List<int[]> posHeuristic= new ArrayList<>();                //Initialize Stack/Queue
 
+
         posBFS.add(new int[][]{startPos});                          //Add first move
         posDFS.add(new int[]{startPos[0], startPos[1], 0, 1});      //Add first move
 
@@ -79,7 +78,7 @@ public class Main {
         int [] newArray;
 
         if(searchMethod.equals("c")){                               //Heuristic 1 case
-            posSequence = getMoveQueueHeuristic1(new int[]{x, y});  //Get pos sequence for heuristic 1
+            posSequence = heuristic1(new int[]{x, y});  //Get pos sequence for heuristic 1
             newArray = new int[4 + posSequence.length];
 
             //Add the original elements
@@ -93,7 +92,7 @@ public class Main {
         }
 
         else if(searchMethod.equals("d")){                          //Heuristic 2 case
-            posSequence = getMoveQueueHeuristic2(new int[]{x, y});  //Get pos sequence for heuristic 2
+            posSequence = heuristic2(new int[]{x, y});  //Get pos sequence for heuristic 2
             newArray = new int[4 + posSequence.length];
             // Add the original elements
                     
@@ -117,16 +116,10 @@ public class Main {
                 DFS(posDFS);
             }
 
-            else if(searchMethod.equals("c")){
+            else if(searchMethod.equals("c") || searchMethod.equals("d")){
                 heuristic(posHeuristic);
             }
-            else if(searchMethod.equals("d")){
-                heuristic(posHeuristic);
-            }
-        
-           /*  if(board.getCell(posBFS.get(0)[0][0], posBFS.get(0)[0][1]).getMoveNumber()==N*N)
-                return solutionFound = true;
-            */
+
             if(n==N*N  && !searchMethod.equals("a")) return solutionFound = true;
         }
 
@@ -230,9 +223,9 @@ public class Main {
             int [] posSequence;
 
             if(searchMethod.equals("c"))                //Get queue for heuristic
-                posSequence = getMoveQueueHeuristic1(new int[]{x, y});
+                posSequence = heuristic1(new int[]{x, y});
             else 
-                posSequence = getMoveQueueHeuristic2(new int[]{x, y});
+                posSequence = heuristic2(new int[]{x, y});
 
             //Assuming posSequence is an int[] array
             int[] newArray = new int[4 + posSequence.length];
@@ -249,28 +242,16 @@ public class Main {
             ++pos.get(pos.size()-1)[3];
             
         }
-        /*  return false; */
-        
-    }
 
-
-    //Return array of moves depending on desirability
-    public static int[] getMoveQueueHeuristic1(int[] pos) {
-        //Run heuristic 1
-        return heuristic1(pos);
-    }
-
-    public static int[] getMoveQueueHeuristic2(int[] pos) {
-        //Run heuristic 2
-        return heuristic2(pos);
     }
 
     public static int[] heuristic1(int[] pos) {
         int[] moveCounts = new int[8];
 
         for(int i = 0; i < knightMoves.length; i++) {
-            int x = pos[0] + knightMoves[i][0];
-            int y = pos[1] + knightMoves[i][1];
+            int[] newPos = getNextPosition(pos, i);
+            int x = newPos[0];
+            int y = newPos[1];
             if(board.isInRange(x, y) && !board.getCell(x, y).isVisited())
                 moveCounts[i] = -getPossibleMoveCount(new int[] {x, y});
         }
@@ -291,8 +272,9 @@ public class Main {
         int[] moveCounts = new int[8];
 
         for(int i = 0; i < knightMoves.length; i++) {
-            int x = pos[0] + knightMoves[i][0];
-            int y = pos[1] + knightMoves[i][1];
+            int[] newPos = getNextPosition(pos, i);
+            int x = newPos[0];
+            int y = newPos[1];
             if(board.isInRange(x, y) && !board.getCell(x, y).isVisited())
                 moveCounts[i] = getPossibleMoveCount(new int[] {x, y});
         }
@@ -304,8 +286,9 @@ public class Main {
         }
 
         for(int i = 0; i < knightMoves.length; i++) {
-            int x = pos[0] + knightMoves[i][0];
-            int y = pos[1] + knightMoves[i][1];
+            int[] newPos = getNextPosition(pos, i);
+            int x = newPos[0];
+            int y = newPos[1];
             if(board.isInRange(x, y) && !board.getCell(x, y).isVisited())
                 moveProxies[i] = getMoveCornerProximity(new int[] {x, y});
         }
@@ -377,8 +360,9 @@ public class Main {
         int possibleMoves = 0;
 
         for(int i = 0; i < knightMoves.length; i++) {
-            int x = pos[0] + knightMoves[i][0];
-            int y = pos[1] + knightMoves[i][1];
+            int[] newPos = getNextPosition(pos, i);
+            int x = newPos[0];
+            int y = newPos[1];
 
             if (board.isInRange(x, y) && !board.getCell(x, y).isVisited()) {    //if move is possible
                 possibleMoves++;
