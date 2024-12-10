@@ -67,6 +67,8 @@ public class Main {
         board.setPosition(startPos[0], startPos[1], 1); //Make first move
 
         List<int[][]> posBFS = new ArrayList<>();                   //Initialize Stack/Queue
+
+        List<int[]> posArray = new ArrayList<>();                     //Initialize Stack/Queue
         List<int[]> posDFS = new ArrayList<>();                     //Initialize Stack/Queue
         List<int[]> posHeuristic= new ArrayList<>();                //Initialize Stack/Queue
 
@@ -77,25 +79,11 @@ public class Main {
         int [] posSequence;
         int [] newArray;
 
-        if(searchMethod.equals("c")){                               //Heuristic 1 case
-            posSequence = heuristic1(new int[]{x, y});  //Get pos sequence for heuristic 1
+        if(searchMethod.equals("c") || searchMethod.equals("d")){                               //Heuristic case
+            posSequence = heuristic2(new int[]{x, y});  //Get pos sequence for heuristic
             newArray = new int[4 + posSequence.length];
 
             //Add the original elements
-            newArray[0] = x;
-            newArray[1] = y;
-            newArray[2] = 1;
-            newArray[3] = 4;
-            // Add elements from posSequence
-            System.arraycopy(posSequence, 0, newArray, 4, posSequence.length);
-            posHeuristic.add(newArray);
-        }
-
-        else if(searchMethod.equals("d")){                          //Heuristic 2 case
-            posSequence = heuristic2(new int[]{x, y});  //Get pos sequence for heuristic 2
-            newArray = new int[4 + posSequence.length];
-            // Add the original elements
-                    
             newArray[0] = x;
             newArray[1] = y;
             newArray[2] = 1;
@@ -222,10 +210,9 @@ public class Main {
             
             int [] posSequence;
 
-            if(searchMethod.equals("c"))                //Get queue for heuristic
-                posSequence = heuristic1(new int[]{x, y});
-            else 
-                posSequence = heuristic2(new int[]{x, y});
+            //Get queue for heuristic
+            posSequence = heuristic2(new int[]{x, y});
+
 
             //Assuming posSequence is an int[] array
             int[] newArray = new int[4 + posSequence.length];
@@ -245,28 +232,6 @@ public class Main {
 
     }
 
-    public static int[] heuristic1(int[] pos) {
-        int[] moveCounts = new int[8];
-
-        for(int i = 0; i < knightMoves.length; i++) {
-            int[] newPos = getNextPosition(pos, i);
-            int x = newPos[0];
-            int y = newPos[1];
-            if(board.isInRange(x, y) && !board.getCell(x, y).isVisited())
-                moveCounts[i] = -getPossibleMoveCount(new int[] {x, y});
-        }
-
-        Integer[] indices = new Integer[moveCounts.length]; //indices to be sorted
-
-        for(int i = 0; i < moveCounts.length; i++) {    //Initialize indices
-            indices[i] = i;
-        }
-
-        Arrays.sort(indices, (i1, i2) -> Integer.compare(moveCounts[(int) i2], moveCounts[(int) i1]));
-
-        return Arrays.stream(indices).mapToInt(Integer::intValue).toArray();
-    }
-
     public static int[] heuristic2(int[] pos) {
         double[] moveProxies = new double[8];
         int[] moveCounts = new int[8];
@@ -276,7 +241,10 @@ public class Main {
             int x = newPos[0];
             int y = newPos[1];
             if(board.isInRange(x, y) && !board.getCell(x, y).isVisited())
-                moveCounts[i] = getPossibleMoveCount(new int[] {x, y});
+                if(searchMethod.equals("d"))
+                    moveCounts[i] = getPossibleMoveCount(new int[] {x, y});
+                else if(searchMethod.equals("c"))
+                    moveCounts[i] = -getPossibleMoveCount(new int[] {x, y});
         }
 
         Integer[] indices = new Integer[moveCounts.length]; //indices to be sorted
@@ -285,16 +253,21 @@ public class Main {
             indices[i] = i;
         }
 
-        for(int i = 0; i < knightMoves.length; i++) {
-            int[] newPos = getNextPosition(pos, i);
-            int x = newPos[0];
-            int y = newPos[1];
-            if(board.isInRange(x, y) && !board.getCell(x, y).isVisited())
-                moveProxies[i] = getMoveCornerProximity(new int[] {x, y});
+        if(searchMethod.equals("d")) {
+            for(int i = 0; i < knightMoves.length; i++) {
+                int[] newPos = getNextPosition(pos, i);
+                int x = newPos[0];
+                int y = newPos[1];
+                if(board.isInRange(x, y) && !board.getCell(x, y).isVisited())
+                    moveProxies[i] = getMoveCornerProximity(new int[] {x, y});
+            }
+
+            return heuristic2Sort(moveCounts, indices, moveProxies);
         }
-
-        return heuristic2Sort(moveCounts, indices, moveProxies);
-
+        else {
+            Arrays.sort(indices, (i1, i2) -> Integer.compare(moveCounts[(int) i2], moveCounts[(int) i1]));
+            return Arrays.stream(indices).mapToInt(Integer::intValue).toArray();
+        }
     }
 
     public static int[] heuristic2Sort(int[] moveCounts, Integer[] indices, double[] moveProxies) {
