@@ -2,9 +2,7 @@ import java.util.*;
 
 public class Main {
 
-    static int x0;              //Starting positions
-    static int y0;
-    static int N;               //Size
+    static int x0, y0, N;              //Starting positions
 
     static int n = 0;
     static int x = 0;
@@ -16,6 +14,8 @@ public class Main {
             {2, 1}, {2, -1}, {-2, 1}, {-2, -1},
             {1, 2}, {1, -2}, {-1, 2}, {-1, -2}
     };
+
+    static List<Node> nodes;
 
     static Board board;
     static boolean solutionFound = false;
@@ -66,17 +66,17 @@ public class Main {
         int i = 0;
         board.setPosition(startPos[0], startPos[1], 1); //Make first move
 
-        int [] posSequence;
-        int [] newArray;
+        int[] posSequence;
+        int[] newArray;
+        nodes = new ArrayList<>();
+        nodes.add(new Node());                                      //Add first node
 
         List<int[]> posArray = new ArrayList<>();                   //Initialize Stack/Queue
 
-        if(searchMethod.equals("a")) {
-            posArray.add(new int[]{startPos[0], startPos[1]});          // Add first move
-        }
-
-        if(searchMethod.equals("b"))      {                         //Depth first initialize
-            posArray.add(new int[]{startPos[0], startPos[1], 0, 1});      //Add first move
+        if(searchMethod.equals("b") || searchMethod.equals("a"))      {                         //Depth first initialize
+            posArray.add(new int[]{startPos[0], startPos[1]});      //Add first move
+            nodes.get(0).setN(1);
+            nodes.get(0).setChild_index(0);
         }
 
         if(searchMethod.equals("c") || searchMethod.equals("d")){                               //Heuristic case
@@ -157,31 +157,44 @@ public class Main {
     }
 
 
-    public static void DFS(List<int[]> pos){
-        int [] currentPos = pos.get(pos.size()-1);
-        int currentMove = currentPos[2];
-        n = currentPos[3];
+    public static void DFS(List<int[]> pos) {
+        int[] currentPos = pos.get(pos.size() - 1);
+        Node currentNode = nodes.get(nodes.size() - 1);
 
-        if(currentPos[2]==knightMoves.length){
+        int currentMove = currentNode.getChild_index();
+        n = currentNode.getN();
+
+        if (currentNode.getChild_index() == knightMoves.length) {  // Set unvisited if last move is played, backtrack cleanup
             board.setPosition(currentPos[0], currentPos[1], -1);
             board.setVisited(currentPos[0], currentPos[1], false);
 
-            pos.remove(pos.size()-1);
-            if(pos.isEmpty())
+            pos.remove(pos.size() - 1);
+            nodes.remove(nodes.size() - 1);
+
+            if (pos.isEmpty()) {                        //No position left, TODO print no solution!
                 return;
-            ++pos.get(pos.size()-1)[2];
-        }
-        else if(board.isInRange(currentPos[0]+knightMoves[currentMove][0], currentPos[1]+knightMoves[currentMove][1])
-            && !board.getCell(currentPos[0]+knightMoves[currentMove][0], currentPos[1]+knightMoves[currentMove][1]).isVisited()){
+            }
+            nodes.get(nodes.size() - 1).incrementChild_index();
+        } else {
+            int[] nextPos = getNextPosition(currentPos, currentMove);       //Get next position
 
-            pos.add(new int[]{currentPos[0]+knightMoves[currentMove][0], currentPos[1]+knightMoves[currentMove][1], 0, n+1});
-            board.setPosition(currentPos[0]+knightMoves[currentMove][0], currentPos[1]+knightMoves[currentMove][1], n+1);
-        }
-        else{
-            ++pos.get(pos.size()-1)[2];
-        }
+            if (board.isInRange(nextPos[0], nextPos[1]) &&
+                    !board.getCell(nextPos[0], nextPos[1]).isVisited()) {
 
+                pos.add(new int[]{nextPos[0], nextPos[1]});
+
+                Node newNode = new Node();
+                newNode.setChild_index(0);
+                newNode.setN(n + 1);
+                nodes.add(newNode);
+
+                board.setPosition(nextPos[0], nextPos[1], n + 1);
+            } else {
+                nodes.get(nodes.size() - 1).incrementChild_index();
+            }
+        }
     }
+
 
     public static void heuristic(List<int[]> pos){
 
