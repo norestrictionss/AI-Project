@@ -83,11 +83,10 @@ public class Main {
         while(!posArray.isEmpty()){
 
             switch (searchMethod) {
-                case "a" -> BFS(posArray);
-                case "b", "c", "d" -> search();
+                case "a", "b", "c", "d" -> search();
             }
 
-            if(n==N*N  && !searchMethod.equals("a")) return solutionFound = true;
+            if(n==N*N) return solutionFound = true;
         }
 
         for(int k = 0;i<N;i++){                                 //Check for unvisited cell and return false
@@ -101,8 +100,13 @@ public class Main {
     }
 
     public static void search() {
-
-        Node currentNode = nodes.get(nodes.size() - 1);                         //Initialize current node, current position
+        Node currentNode;
+        if(searchMethod.equals("a")) {
+            currentNode = nodes.get(0);
+        }
+        else {
+            currentNode = nodes.get(nodes.size() - 1);                         //Initialize current node, current position
+        }
         int [] currentPos = new int[]{currentNode.getX(), currentNode.getY()};  //
 
         int posSequenceIndex = currentNode.getPosSequenceIndex();
@@ -112,20 +116,27 @@ public class Main {
         int[] newPos;
 
         if(posSequenceIndex!=knightMoves.length){                               //Try moves
-            newPos = getNextPosition(currentPos, nodes.get(nodes.size() - 1).getPossibleMoves()[posSequenceIndex]);
+            newPos = getNextPosition(currentPos, currentNode.getPossibleMoves()[posSequenceIndex]);
             x = newPos[0];
             y = newPos[1];
         }
+
         if(posSequenceIndex==knightMoves.length){                               //Last move tried, backtrack cleanup
             board.setPosition(currentPos[0], currentPos[1], -1);
             board.setVisited(currentPos[0], currentPos[1], false);
 
-            nodes.remove(nodes.size() - 1);
+            if(searchMethod.equals("a"))
+                nodes.remove(0);
+            else
+                nodes.remove(nodes.size() - 1);
 
             if(nodes.isEmpty())               //No more nodes to explore, failed to find solution
                 return;
 
-            nodes.get(nodes.size() - 1).incrementPosSequenceIndex();
+            if(searchMethod.equals("a"))
+                nodes.get(0).incrementPosSequenceIndex();
+            else
+                nodes.get(nodes.size() - 1).incrementPosSequenceIndex();
         }
         else if(board.isInRange(x, y)                                                //if on board and not visited
                 && !board.getCell(x, y).isVisited()){
@@ -137,8 +148,11 @@ public class Main {
                 posSequence = getPosSequenceHeuristic(new int[]{x, y});
             else if(searchMethod.equals("b"))
                 posSequence = new int[] {0, 1, 2, 3, 4, 5, 6, 7};
-            else
-                posSequence = new int[] {0, 1};
+            else {
+                nodes.get(0).incrementPosSequenceIndex();
+                posSequence = new int[] {0, 1, 2, 3, 4, 5, 6, 7};
+            }
+
 
             Node newNode = new Node();
             newNode.setX(x);
@@ -148,55 +162,13 @@ public class Main {
             newNode.setPossibleMoves(posSequence);
             nodes.add(newNode);
         }
-        else{
-            nodes.get(nodes.size() - 1).incrementPosSequenceIndex();
 
-        }
-    }
+        else{                               //Skip this move
+            if(searchMethod.equals("a"))
+                nodes.get(0).incrementPosSequenceIndex();
+            else
+                nodes.get(nodes.size() - 1).incrementPosSequenceIndex();
 
-    public static void BFS(List<int[]> pos){                  // BFS function with given stack/queue
-
-        int[] path = pos.remove(0);                // Pop first position from stack/queue to process
-        int lastPositionX = path[path.length - 2];      // Get last X position
-        int lastPositionY = path[path.length - 1];      // Get last Y position
-
-        clearBoard();
-
-        // Set visited position move number
-        for(int i = 0; i < path.length / 2; i++){
-            int x = path[2 * i]; // X coordinate at even index
-            int y = path[2 * i + 1]; // Y coordinate at odd index
-            board.setPosition(x, y, i + 1);
-        }
-
-
-        // Check possible knight moves, make  move
-        for(int i = 0; i < knightMoves.length; i++){
-            int[] newPos = getNextPosition(new int[] {lastPositionX, lastPositionY}, i);
-            int newX = newPos[0];
-            int newY = newPos[1];
-
-            // If unvisited and in range
-            if(board.isInRange(newX, newY) && !board.getCell(newX, newY).isVisited()){
-
-                int[] nextPos = new int[]{newX, newY}; // Make a move, put into nextPos[]
-                int[] newPath = new int[path.length + 2]; // Add next position to the path
-
-                System.arraycopy(path, 0, newPath, 0, path.length); // Copy existing path
-                newPath[path.length] = nextPos[0];
-                newPath[path.length + 1] = nextPos[1];
-
-                pos.add(newPath); // Add the new path to the queue
-            }
-        }
-    }
-
-    public static void clearBoard() {
-        for(int i = 0; i < N; i++){                    // Loop all cells, set unvisited
-            for(int j = 0; j < N; j++){
-                board.setPosition(i, j, -1);
-                board.setVisited(i, j, false);
-            }
         }
     }
 
