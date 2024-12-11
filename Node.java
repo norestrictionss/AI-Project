@@ -1,10 +1,10 @@
 public class Node {
 
-    private int x,y,n,child_index;
+    private int x,y,n, posSequenceIndex;
     private int[] possibleMoves;
     public Node() {
         this.n = 0;
-        this.child_index = 0;
+        this.posSequenceIndex = 0;
         this.x = 0;
         this.y = 0;
     }
@@ -24,8 +24,8 @@ public class Node {
         return possibleMoves;
     }
 
-    public int getChild_index() {
-        return child_index;
+    public int getPosSequenceIndex() {
+        return posSequenceIndex;
     }
 
     public int getN() {
@@ -44,12 +44,12 @@ public class Node {
         this.y = y;
     }
 
-    public void setChild_index(int child_index) {
-        this.child_index = child_index;
+    public void setPosSequenceIndex(int posSequenceIndex) {
+        this.posSequenceIndex = posSequenceIndex;
     }
 
-    public void incrementChild_index() {
-        this.child_index++;
+    public void incrementPosSequenceIndex() {
+        this.posSequenceIndex++;
     }
 
     public void setPossibleMoves(int[] possibleMoves) {

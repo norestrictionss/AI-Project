@@ -75,7 +75,7 @@ public class Main {
         nodes.get(0).setN(1);
         nodes.get(0).setX(x);
         nodes.get(0).setY(y);
-        nodes.get(0).setChild_index(0);
+        nodes.get(0).setPosSequenceIndex(0);
 
         posArray.add(new int[]{startPos[0], startPos[1]});
     
@@ -84,7 +84,7 @@ public class Main {
 
             switch (searchMethod) {
                 case "a" -> BFS(posArray);
-                case "b", "c", "d" -> search(posArray);
+                case "b", "c", "d" -> search();
             }
 
             if(n==N*N  && !searchMethod.equals("a")) return solutionFound = true;
@@ -100,37 +100,34 @@ public class Main {
         return solutionFound = true;                            //If all visited return true
     }
 
-    public static void search(List<int[]> pos) {
+    public static void search() {
 
-        Node currentNode = nodes.get(nodes.size() - 1);
-        int [] currentPos = new int[]{currentNode.getX(), currentNode.getY()};
+        Node currentNode = nodes.get(nodes.size() - 1);                         //Initialize current node, current position
+        int [] currentPos = new int[]{currentNode.getX(), currentNode.getY()};  //
 
-        int posSequenceIndex = currentNode.getChild_index();
+        int posSequenceIndex = currentNode.getPosSequenceIndex();
         n = currentNode.getN();
 
         board.setPosition(currentPos[0], currentPos[1], n);
         int[] newPos;
 
-        if(posSequenceIndex!=knightMoves.length){
+        if(posSequenceIndex!=knightMoves.length){                               //Try moves
             newPos = getNextPosition(currentPos, nodes.get(nodes.size() - 1).getPossibleMoves()[posSequenceIndex]);
             x = newPos[0];
             y = newPos[1];
         }
-
-        if(posSequenceIndex==knightMoves.length){
+        if(posSequenceIndex==knightMoves.length){                               //Last move tried, backtrack cleanup
             board.setPosition(currentPos[0], currentPos[1], -1);
             board.setVisited(currentPos[0], currentPos[1], false);
 
-            //pos.remove(pos.size()-1);
             nodes.remove(nodes.size() - 1);
 
-            if(nodes.isEmpty())               //No more nodes to explore
+            if(nodes.isEmpty())               //No more nodes to explore, failed to find solution
                 return;
 
-            nodes.get(nodes.size() - 1).incrementChild_index();
+            nodes.get(nodes.size() - 1).incrementPosSequenceIndex();
         }
-
-        else if(board.isInRange(x, y)
+        else if(board.isInRange(x, y)                                                //if on board and not visited
                 && !board.getCell(x, y).isVisited()){
 
             int [] posSequence;
@@ -138,19 +135,21 @@ public class Main {
             //Get queue for heuristic
             if(searchMethod.equals("c") || searchMethod.equals("d"))
                 posSequence = getPosSequenceHeuristic(new int[]{x, y});
-            else
+            else if(searchMethod.equals("b"))
                 posSequence = new int[] {0, 1, 2, 3, 4, 5, 6, 7};
+            else
+                posSequence = new int[] {0, 1};
 
             Node newNode = new Node();
             newNode.setX(x);
             newNode.setY(y);
             newNode.setN(n + 1);
-            newNode.setChild_index(0);
+            newNode.setPosSequenceIndex(0);
             newNode.setPossibleMoves(posSequence);
             nodes.add(newNode);
         }
         else{
-            nodes.get(nodes.size() - 1).incrementChild_index();
+            nodes.get(nodes.size() - 1).incrementPosSequenceIndex();
 
         }
     }
