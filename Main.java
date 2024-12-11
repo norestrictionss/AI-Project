@@ -81,16 +81,12 @@ public class Main {
 
         if(searchMethod.equals("c") || searchMethod.equals("d")){                               //Heuristic case
             posSequence = getPosSequenceHeuristic(new int[]{x, y});  //Get pos sequence for heuristic
-            newArray = new int[4 + posSequence.length];
+            nodes.get(0).setN(1);
+            nodes.get(0).setX(x);
+            nodes.get(0).setY(y);
+            nodes.get(0).setChild_index(0);
 
-            //Add the original elements
-            newArray[0] = x;
-            newArray[1] = y;
-            newArray[2] = 1;
-            newArray[3] = 4;
-            // Add elements from posSequence
-            System.arraycopy(posSequence, 0, newArray, 4, posSequence.length);
-            posArray.add(newArray);
+            posArray.add(posSequence);
         }
     
         //place remaining knights
@@ -115,18 +111,17 @@ public class Main {
         return solutionFound = true;                            //If all visited return true
     }
 
+    public static void search(List<int[]> pos) {
+
+    }
+
     public static void BFS(List<int[]> pos){                  // BFS function with given stack/queue
 
         int[] path = pos.remove(0);                // Pop first position from stack/queue to process
         int lastPositionX = path[path.length - 2];      // Get last X position
         int lastPositionY = path[path.length - 1];      // Get last Y position
 
-        for(int i = 0; i < N; i++){                    // Loop all cells, set unvisited
-            for(int j = 0; j < N; j++){
-                board.setPosition(i, j, -1);
-                board.setVisited(i, j, false);
-            }
-        }
+        clearBoard();
 
         // Set visited position move number
         for(int i = 0; i < path.length / 2; i++){
@@ -135,7 +130,8 @@ public class Main {
             board.setPosition(x, y, i + 1);
         }
 
-        // Check possible knight moves
+
+        // Check possible knight moves, make  move
         for(int i = 0; i < knightMoves.length; i++){
             int[] newPos = getNextPosition(new int[] {lastPositionX, lastPositionY}, i);
             int newX = newPos[0];
@@ -198,27 +194,35 @@ public class Main {
 
     public static void heuristic(List<int[]> pos){
 
-        int [] currentPos = new int[]{pos.get(pos.size()-1)[0], pos.get(pos.size()-1)[1]};
-        int posSequenceIndex = pos.get(pos.size()-1)[3];
-        n = pos.get(pos.size()-1)[2];
+        Node currentNode = nodes.get(nodes.size() - 1);
+        int [] currentPos = new int[]{currentNode.getX(), currentNode.getY()};
+
+        int posSequenceIndex = currentNode.getChild_index();
+        n = currentNode.getN();
+
         board.setPosition(currentPos[0], currentPos[1], n);
-        int[] newPos; 
-        if(posSequenceIndex-4!=knightMoves.length){
+        int[] newPos;
+
+        if(posSequenceIndex!=knightMoves.length){
             newPos = getNextPosition(currentPos, pos.get(pos.size()-1)[posSequenceIndex]);
             x = newPos[0];
             y = newPos[1];
         }
 
-        if(posSequenceIndex-4==knightMoves.length){
+        if(posSequenceIndex==knightMoves.length){
             board.setPosition(currentPos[0], currentPos[1], -1);
             board.setVisited(currentPos[0], currentPos[1], false);
             
             pos.remove(pos.size()-1);
-            if(pos.isEmpty())
+            nodes.remove(nodes.size() - 1);
+
+            if(pos.isEmpty())               //No more nodes to explore
                 return;
-            ++pos.get(pos.size()-1)[3];
+
+            nodes.get(nodes.size() - 1).incrementChild_index();
         }
-        else if(board.isInRange(x, y) 
+
+        else if(board.isInRange(x, y)
             && !board.getCell(x, y).isVisited()){
             
             int [] posSequence;
@@ -226,23 +230,28 @@ public class Main {
             //Get queue for heuristic
             posSequence = getPosSequenceHeuristic(new int[]{x, y});
 
+            pos.add(posSequence);
 
-            //Assuming posSequence is an int[] array
-            int[] newArray = new int[4 + posSequence.length];
-            // Add the original elements
-            newArray[0] = x;  // The x coordinate that will be expanded
-            newArray[1] = y; // The y coordinate that will be expanded
-            newArray[2] = n + 1; // Move count of the next node
-            newArray[3] = 4; // Current index of the position sequence
-            // Add elements from posSequence
-            System.arraycopy(posSequence, 0, newArray, 4, posSequence.length);
-            pos.add(newArray);
+            Node newNode = new Node();
+            newNode.setX(x);
+            newNode.setY(y);
+            newNode.setN(n + 1);
+            newNode.setChild_index(0);
+            nodes.add(newNode);
         }
         else{
-            ++pos.get(pos.size()-1)[3];
+            nodes.get(nodes.size() - 1).incrementChild_index();
             
         }
+    }
 
+    public static void clearBoard() {
+        for(int i = 0; i < N; i++){                    // Loop all cells, set unvisited
+            for(int j = 0; j < N; j++){
+                board.setPosition(i, j, -1);
+                board.setVisited(i, j, false);
+            }
+        }
     }
 
     public static int[] getPosSequenceHeuristic(int[] pos) {

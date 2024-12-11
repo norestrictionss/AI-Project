@@ -1,10 +1,11 @@
 public class Node {
-    private int n;
 
-    private int child_index;
+    private int x,y,n,child_index;
     public Node() {
         this.n = 0;
         this.child_index = 0;
+        this.x = 0;
+        this.y = 0;
     }
 
 
@@ -23,11 +24,26 @@ public class Node {
         this.n = n;
     }
 
+    public void setX(int x) {
+        this.x = x;
+    }
+
+    public void setY(int y) {
+        this.y = y;
+    }
+
     public void setChild_index(int child_index) {
         this.child_index = child_index;
     }
 
     public void incrementChild_index() {
         this.child_index++;
+    }
+
+    public int getX() {
+        return x;
+    }
+    public int getY() {
+        return y;
     }
 }
