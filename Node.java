@@ -1,6 +1,7 @@
 public class Node {
 
     private int x,y,n,child_index;
+    private int[] possibleMoves;
     public Node() {
         this.n = 0;
         this.child_index = 0;
@@ -11,6 +12,17 @@ public class Node {
 
 
     //Getters and setters
+
+
+    public int getX() {
+        return x;
+    }
+    public int getY() {
+        return y;
+    }
+    public int[] getPossibleMoves() {
+        return possibleMoves;
+    }
 
     public int getChild_index() {
         return child_index;
@@ -40,10 +52,8 @@ public class Node {
         this.child_index++;
     }
 
-    public int getX() {
-        return x;
+    public void setPossibleMoves(int[] possibleMoves) {
+        this.possibleMoves = possibleMoves;
     }
-    public int getY() {
-        return y;
-    }
+
 }

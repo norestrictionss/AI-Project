@@ -62,32 +62,22 @@ public class Main {
     }
 
     public static boolean TREE_SEARCH(int[] startPos) {
-        //First knight placed
+        //First knight placed frontier initialization
         int i = 0;
         board.setPosition(startPos[0], startPos[1], 1); //Make first move
 
-        int[] posSequence;
-        int[] newArray;
         nodes = new ArrayList<>();
         nodes.add(new Node());                                      //Add first node
 
         List<int[]> posArray = new ArrayList<>();                   //Initialize Stack/Queue
 
-        if(searchMethod.equals("b") || searchMethod.equals("a"))      {                         //Depth first initialize
-            posArray.add(new int[]{startPos[0], startPos[1]});      //Add first move
-            nodes.get(0).setN(1);
-            nodes.get(0).setChild_index(0);
-        }
+        nodes.get(0).setPossibleMoves(getPosSequenceHeuristic(new int[]{x, y}));        //initialize forintier
+        nodes.get(0).setN(1);
+        nodes.get(0).setX(x);
+        nodes.get(0).setY(y);
+        nodes.get(0).setChild_index(0);
 
-        if(searchMethod.equals("c") || searchMethod.equals("d")){                               //Heuristic case
-            posSequence = getPosSequenceHeuristic(new int[]{x, y});  //Get pos sequence for heuristic
-            nodes.get(0).setN(1);
-            nodes.get(0).setX(x);
-            nodes.get(0).setY(y);
-            nodes.get(0).setChild_index(0);
-
-            posArray.add(posSequence);
-        }
+        posArray.add(new int[]{startPos[0], startPos[1]});
     
         //place remaining knights
         while(!posArray.isEmpty()){
@@ -204,7 +194,7 @@ public class Main {
         int[] newPos;
 
         if(posSequenceIndex!=knightMoves.length){
-            newPos = getNextPosition(currentPos, pos.get(pos.size()-1)[posSequenceIndex]);
+            newPos = getNextPosition(currentPos, nodes.get(nodes.size() - 1).getPossibleMoves()[posSequenceIndex]);
             x = newPos[0];
             y = newPos[1];
         }
@@ -213,10 +203,10 @@ public class Main {
             board.setPosition(currentPos[0], currentPos[1], -1);
             board.setVisited(currentPos[0], currentPos[1], false);
             
-            pos.remove(pos.size()-1);
+            //pos.remove(pos.size()-1);
             nodes.remove(nodes.size() - 1);
 
-            if(pos.isEmpty())               //No more nodes to explore
+            if(nodes.isEmpty())               //No more nodes to explore
                 return;
 
             nodes.get(nodes.size() - 1).incrementChild_index();
@@ -230,18 +220,100 @@ public class Main {
             //Get queue for heuristic
             posSequence = getPosSequenceHeuristic(new int[]{x, y});
 
-            pos.add(posSequence);
-
             Node newNode = new Node();
             newNode.setX(x);
             newNode.setY(y);
             newNode.setN(n + 1);
             newNode.setChild_index(0);
+            newNode.setPossibleMoves(posSequence);
             nodes.add(newNode);
         }
         else{
             nodes.get(nodes.size() - 1).incrementChild_index();
             
+        }
+    }
+
+    public static void DFSHeuristic(List<int[]> pos) {
+        int[] currentPos = pos.get(pos.size() - 1);  // Current position in the path
+        Node currentNode = nodes.get(nodes.size() - 1);  // Last node in the search tree
+
+        int currentMove = currentNode.getChild_index();  // Current move sequence
+        n = currentNode.getN();  // Current step number
+
+        // If last move has been played, backtrack cleanup
+        if (currentMove == knightMoves.length) {
+            board.setPosition(currentPos[0], currentPos[1], -1);  // Reset position
+            board.setVisited(currentPos[0], currentPos[1], false);  // Mark as unvisited
+
+            pos.remove(pos.size() - 1);  // Remove last position
+            nodes.remove(nodes.size() - 1);  // Remove last node
+
+            // If no position left to explore, exit
+            if (pos.isEmpty()) {
+                return;  // No solution found (not handled explicitly here)
+            }
+
+            // Increment child index for the parent node
+            nodes.get(nodes.size() - 1).incrementChild_index();
+        } else {
+            // Get the next position based on the current move index
+            int[] nextPos = getNextPosition(currentPos, currentMove);
+
+            // If valid next position
+            if (board.isInRange(nextPos[0], nextPos[1]) &&
+                    !board.getCell(nextPos[0], nextPos[1]).isVisited()) {
+
+                pos.add(new int[]{nextPos[0], nextPos[1]});  // Add new position to the path
+
+                Node newNode = new Node();
+                newNode.setChild_index(0);  // Start at first child
+                newNode.setN(n + 1);  // Increment step number
+                nodes.add(newNode);  // Add new node
+
+                board.setPosition(nextPos[0], nextPos[1], n + 1);  // Mark position with step number
+            } else {
+                // If move isn't valid, increment child index to try next move
+                nodes.get(nodes.size() - 1).incrementChild_index();
+            }
+        }
+
+        // Perform heuristic exploration if not at the last move yet
+        if (currentMove != knightMoves.length) {
+            // Compute next position based on heuristic
+            int[] newPos = getNextPosition(currentPos, nodes.get(nodes.size() - 1).getPossibleMoves()[currentMove]);
+            x = newPos[0];
+            y = newPos[1];
+
+            // If valid move, perform heuristic-based exploration
+            if (board.isInRange(x, y) && !board.getCell(x, y).isVisited()) {
+                int[] posSequence = getPosSequenceHeuristic(new int[]{x, y});  // Get sequence for heuristic
+
+                Node newNode = new Node();
+                newNode.setX(x);
+                newNode.setY(y);
+                newNode.setN(n + 1);  // Increment step number
+                newNode.setChild_index(0);  // Start at first child
+                newNode.setPossibleMoves(posSequence);  // Set possible moves based on heuristic
+                nodes.add(newNode);  // Add new node for heuristic path
+
+                // Update the board
+                board.setPosition(x, y, n + 1);  // Mark position on the board
+            }
+        } else {
+            // If we've reached the last possible move, perform backtracking
+            board.setPosition(currentPos[0], currentPos[1], -1);  // Reset position
+            board.setVisited(currentPos[0], currentPos[1], false);  // Mark as unvisited
+
+            nodes.remove(nodes.size() - 1);  // Remove the last node
+
+            // If no nodes left to explore, exit
+            if (nodes.isEmpty()) {
+                return;  // No more nodes to explore (no solution found)
+            }
+
+            // Increment the child index of the parent node for the next exploration step
+            nodes.get(nodes.size() - 1).incrementChild_index();
         }
     }
 
