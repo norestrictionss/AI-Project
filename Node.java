@@ -1,3 +1,6 @@
+import java.util.ArrayList;
+import java.util.List;
+
 public class Node {
 
     private int x,y,n, posSequenceIndex;
@@ -12,7 +15,6 @@ public class Node {
 
 
     //Getters and setters
-
 
     public int getX() {
         return x;
