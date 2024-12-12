@@ -87,8 +87,6 @@ public class Main {
             nodes = new ArrayList<>();
             nodes.add(new Node());                                      //Add first node
 
-            List<int[]> posArray = new ArrayList<>();                   //Initialize Stack/Queue
-
             nodes.get(0).setPossibleMoves(getPosSequenceHeuristic(new int[]{x, y}));        //initialize frontier
             nodes.get(0).setN(1);
             nodes.get(0).setX(x);
@@ -96,13 +94,11 @@ public class Main {
             nodes.get(0).setPosSequenceIndex(0);
             nodesExplored = 1;
 
-            posArray.add(new int[]{startPos[0], startPos[1]});
-
             long limitStartTime = System.currentTimeMillis();
-            long timeLimit = 900000;//TODO remove 15
+            long timeLimit = 900000;
 
             //place remaining knights
-            while (!posArray.isEmpty()) {
+            while (!nodes.isEmpty()) {
 
                 long limitElapsedTime = System.currentTimeMillis() - limitStartTime;
 
@@ -111,10 +107,8 @@ public class Main {
                     return solutionFound = false;
                 }
 
-                switch (searchMethod) {
-                    case "a" -> BFS(posArray);
-                    case "b", "c", "d" -> search();
-                }
+                search();
+
                 nodesExplored++;
                 if (n == N * N) return solutionFound = true;
             }
@@ -134,48 +128,22 @@ public class Main {
         }
     }
 
-    public static void BFS(List<int[]> pos){                  // BFS function with given stack/queue
-
-        int[] path = pos.remove(0);                // Pop first position from stack/queue to process
-        int lastPositionX = path[path.length - 2];      // Get last X position
-        int lastPositionY = path[path.length - 1];      // Get last Y position
-
-        clearBoard();
-
-        // Set visited position move number
-        for(int i = 0; i < path.length / 2; i++){
-            int x = path[2 * i]; // X coordinate at even index
-            int y = path[2 * i + 1]; // Y coordinate at odd index
-            board.setPosition(x, y, i + 1);
-        }
-
-
-        // Check possible knight moves, make  move
-        for(int i = 0; i < knightMoves.length; i++){
-            int[] newPos = getNextPosition(new int[] {lastPositionX, lastPositionY}, i);
-            int newX = newPos[0];
-            int newY = newPos[1];
-
-            // If unvisited and in range
-            if(board.isInRange(newX, newY) && !board.getCell(newX, newY).isVisited()){
-
-                int[] nextPos = new int[]{newX, newY}; // Make a move, put into nextPos[]
-                int[] newPath = new int[path.length + 2]; // Add next position to the path
-
-                System.arraycopy(path, 0, newPath, 0, path.length); // Copy existing path
-                newPath[path.length] = nextPos[0];
-                newPath[path.length + 1] = nextPos[1];
-
-                pos.add(newPath); // Add the new path to the queue
-            }
-        }
-    }
 
     public static void search() {
         Node currentNode;
+        List<int[]> currentPath;
 
         if(searchMethod.equals("a")) {
+
+            clearBoard();
+
             currentNode = nodes.get(0);                     //Get first
+
+            currentPath = currentNode.getPath();            //get current path to fill board accordingly
+
+            for(int i = 0; i < currentPath.size(); i++) {   //repopulate board with path of current node
+                board.setPosition(currentPath.get(i)[0], currentPath.get(i)[1], i+1);
+            }
         }
         else
             currentNode = nodes.get(nodes.size() - 1);      //Get last                 //Initialize current node, current position
@@ -203,9 +171,6 @@ public class Main {
 
             nodes.remove(nodes.size() - 1);
 
-            if(nodes.isEmpty())               //No more nodes to explore, failed to find solution
-                return;
-
             nodes.get(nodes.size() - 1).incrementPosSequenceIndex();
         }
         else if(board.isInRange(x, y)                                                //if on board and not visited
@@ -230,6 +195,8 @@ public class Main {
             newNode.setN(n + 1);
             newNode.setPosSequenceIndex(0);
             newNode.setPossibleMoves(posSequence);
+            newNode.setPath(currentNode.getPath());
+            newNode.addToPath(currentPos);      //add path to child
             nodes.add(newNode);
         }
 

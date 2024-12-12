@@ -5,17 +5,24 @@ public class Node {
 
     private int x,y,n, posSequenceIndex;
     private int[] possibleMoves;
+    private List<int[]> path;
     public Node() {
         this.n = 0;
         this.posSequenceIndex = 0;
         this.x = 0;
         this.y = 0;
+        this.path = new ArrayList<>();
     }
 
 
 
     //Getters and setters
 
+
+
+    public List<int[]> getPath() {
+        return path;
+    }
     public int getX() {
         return x;
     }
@@ -58,4 +65,22 @@ public class Node {
         this.possibleMoves = possibleMoves;
     }
 
+    public void addToPath(int[] pos) {
+        this.path.add(pos);
+    }
+
+    public void setPath(List<int[]> path) {
+
+        List<int[]> copiedPath = new ArrayList<>();
+        for (int[] array : path) {
+
+            int[] arrayCopy = new int[array.length];
+            System.arraycopy(array, 0, arrayCopy, 0, array.length);
+
+
+            copiedPath.add(arrayCopy);
+        }
+
+        this.path = copiedPath;
+    }
 }
