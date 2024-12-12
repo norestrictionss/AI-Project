@@ -2,6 +2,8 @@ import java.util.*;
 
 public class Main {
 
+    static long nodesExplored;
+
     static int x0, y0, N;              //Starting positions
 
     static int n = 0;
@@ -22,6 +24,7 @@ public class Main {
     static int[] startPosition = new int[1];    //Starting position to be set
 
     public static void main(String[] args) {
+
         Scanner scanner = new Scanner(System.in);
 
         //Input taking
@@ -42,6 +45,9 @@ public class Main {
         //Initialize board
         board = new Board(N);
 
+        long startTime = System.currentTimeMillis();
+
+
         //Search
         solutionFound = TREE_SEARCH(startPosition);
 
@@ -50,7 +56,7 @@ public class Main {
             System.out.println("Solution found!");
             board.printBoard();
         }
-        else if (N < 5) {       //TODO make it so functions called actually detect this!
+        else if (N < 5) {
             System.out.println("No Solution Exists");
         }
         else {
@@ -58,46 +64,74 @@ public class Main {
             board.printBoard();
         }
 
+        long stopTime = System.currentTimeMillis();
+
+        double elapsedTime = (double) (stopTime - startTime) / 1000;
+
+        long elapsedMinutes = (long) (elapsedTime / 60);
+        double elapsedSeconds = elapsedTime % 60;
+
+        System.out.printf("\nExecution time: %d minutes and %.3f seconds\n", elapsedMinutes, elapsedSeconds);
+
+        System.out.printf("\nNodes Explored: %d \n", nodesExplored);
+
         scanner.close();
     }
 
     public static boolean TREE_SEARCH(int[] startPos) {
-        //First knight placed frontier initialization
-        int i = 0;
-        board.setPosition(startPos[0], startPos[1], 1); //Make first move
+        try {
+            //First knight placed frontier initialization
+            int i = 0;
+            board.setPosition(startPos[0], startPos[1], 1); //Make first move
 
-        nodes = new ArrayList<>();
-        nodes.add(new Node());                                      //Add first node
+            nodes = new ArrayList<>();
+            nodes.add(new Node());                                      //Add first node
 
-        List<int[]> posArray = new ArrayList<>();                   //Initialize Stack/Queue
+            List<int[]> posArray = new ArrayList<>();                   //Initialize Stack/Queue
 
-        nodes.get(0).setPossibleMoves(getPosSequenceHeuristic(new int[]{x, y}));        //initialize frontier
-        nodes.get(0).setN(1);
-        nodes.get(0).setX(x);
-        nodes.get(0).setY(y);
-        nodes.get(0).setPosSequenceIndex(0);
+            nodes.get(0).setPossibleMoves(getPosSequenceHeuristic(new int[]{x, y}));        //initialize frontier
+            nodes.get(0).setN(1);
+            nodes.get(0).setX(x);
+            nodes.get(0).setY(y);
+            nodes.get(0).setPosSequenceIndex(0);
+            nodesExplored = 1;
 
-        posArray.add(new int[]{startPos[0], startPos[1]});
-    
-        //place remaining knights
-        while(!posArray.isEmpty()){
+            posArray.add(new int[]{startPos[0], startPos[1]});
 
-            switch (searchMethod) {
-                case "a" -> BFS(posArray);
-                case "b", "c", "d" -> search();
+            long limitStartTime = System.currentTimeMillis();
+            long timeLimit = 900000;//TODO remove 15
+
+            //place remaining knights
+            while (!posArray.isEmpty()) {
+
+                long limitElapsedTime = System.currentTimeMillis() - limitStartTime;
+
+                if (limitElapsedTime >= timeLimit) {
+                    System.out.printf("\nExecution ended in %d minutes\n", timeLimit / 60);
+                    return solutionFound = false;
+                }
+
+                switch (searchMethod) {
+                    case "a" -> BFS(posArray);
+                    case "b", "c", "d" -> search();
+                }
+                nodesExplored++;
+                if (n == N * N) return solutionFound = true;
             }
 
-            if(n==N*N) return solutionFound = true;
-        }
-
-        for(int k = 0;i<N;i++){                                 //Check for unvisited cell and return false
-            for(int j = 0;j<N;j++){
-                if(board.getCell(k, j).getMoveNumber()==-1)
-                    return solutionFound=false;
+            for (int k = 0; i < N; i++) {                                 //Check for unvisited cell and return false
+                for (int j = 0; j < N; j++) {
+                    if (board.getCell(k, j).getMoveNumber() == -1)
+                        return solutionFound = false;
+                }
             }
-        }
 
-        return solutionFound = true;                            //If all visited return true
+            return solutionFound = true;                            //If all visited return true
+        }
+        catch (OutOfMemoryError e) {
+            System.out.println("Out of Memory");
+            return false;
+        }
     }
 
     public static void BFS(List<int[]> pos){                  // BFS function with given stack/queue
