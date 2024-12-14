@@ -2,11 +2,13 @@ import java.util.*;
 
 public class Main {
 
-    static long nodesExplored;
+    static long nodesExplored;         //No of nodes explored during search
 
     static int x0, y0, N;              //Starting positions
 
-    static int n = 0;
+    static int timeLimit;
+
+    static int n = 0;                  //Move count
     static int x = 0;
     static int y = 0;
     
@@ -17,7 +19,7 @@ public class Main {
             {1, 2}, {1, -2}, {-1, 2}, {-1, -2}
     };
 
-    static List<Node> nodes;
+    static List<Node> nodes;            //nodes queue/stack
 
     static Board board;
     static boolean solutionFound = false;
@@ -41,6 +43,9 @@ public class Main {
 
         System.out.print("Enter the search method preferred (a,b,c,d):= ");
         searchMethod = scanner.next();
+
+        System.out.print("Enter the time limit desired in minutes timeLimit:= ");
+        timeLimit = scanner.nextInt();
 
         //Initialize board
         board = new Board(N);
@@ -94,16 +99,16 @@ public class Main {
             nodes.get(0).setPosSequenceIndex(0);
             nodesExplored = 1;
 
-            long limitStartTime = System.currentTimeMillis();
-            long timeLimit = 900000;
+            long limitStartTime = System.currentTimeMillis();                               //Set time limit
+            long timeLimitLong = 60000L * timeLimit;                                        //900000 for 15 minutes
 
             //place remaining knights
             while (!nodes.isEmpty()) {
 
                 long limitElapsedTime = System.currentTimeMillis() - limitStartTime;
 
-                if (limitElapsedTime >= timeLimit) {
-                    System.out.printf("\nExecution ended in %d minutes\n", timeLimit / 60);
+                if (limitElapsedTime >= timeLimitLong) {
+                    System.out.printf("\nExecution ended in %d minutes\n", timeLimit);
                     return solutionFound = false;
                 }
 
@@ -133,7 +138,7 @@ public class Main {
         Node currentNode;
         List<int[]> currentPath;
 
-        if(searchMethod.equals("a")) {
+        if(searchMethod.equals("a")) {                      //Initialization for BFS
 
             clearBoard();
 
@@ -179,7 +184,7 @@ public class Main {
             int [] posSequence;
 
             //Get queue for heuristic
-            if(searchMethod.equals("c") || searchMethod.equals("d"))
+            if(searchMethod.equals("c") || searchMethod.equals("d"))                //Stack/Queue methodology for h1b,h2,bfs,dfs
                 posSequence = getPosSequenceHeuristic(new int[]{x, y});
             else if(searchMethod.equals("b"))
                 posSequence = new int[] {0, 1, 2, 3, 4, 5, 6, 7};
@@ -197,7 +202,7 @@ public class Main {
             newNode.setPossibleMoves(posSequence);
             newNode.setPath(currentNode.getPath());
             newNode.addToPath(currentPos);      //add path to child
-            nodes.add(newNode);
+            nodes.add(newNode);                 //add new node
         }
 
         else{                               //Skip this move
@@ -208,7 +213,7 @@ public class Main {
         }
     }
 
-    public static void clearBoard() {
+    public static void clearBoard() {                   //clear board for bfs
         for(int i = 0; i < N; i++){                    // Loop all cells, set unvisited
             for(int j = 0; j < N; j++){
                 board.setPosition(i, j, -1);
@@ -218,7 +223,7 @@ public class Main {
     }
 
 
-    public static int[] getPosSequenceHeuristic(int[] pos) {
+    public static int[] getPosSequenceHeuristic(int[] pos) {           //returns heuristic position sequence
         double[] moveProxies = new double[8];
         int[] moveCounts = new int[8];
 
@@ -256,7 +261,7 @@ public class Main {
         }
     }
 
-    public static int[] heuristic2Sort(int[] moveCounts, Integer[] indices, double[] moveProxies) {
+    public static int[] heuristic2Sort(int[] moveCounts, Integer[] indices, double[] moveProxies) {     //auxiliary function for heuristic h2, sorts arrays
         for (int i = 0; i < knightMoves.length - 1; i++) {
             int min = i;
 
